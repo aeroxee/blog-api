@@ -1,0 +1,5 @@
+media/**
+blogapi
+vendor/**
+docs/.env
+.env
