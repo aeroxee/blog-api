@@ -3,15 +3,26 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 func UploadHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		err := godotenv.Load()
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
 		uid := uuid.NewString()
 		randomString := strings.ReplaceAll(uid, "-", "")
 
@@ -41,7 +52,7 @@ func UploadHandler() gin.HandlerFunc {
 		ctx.JSON(http.StatusCreated, gin.H{
 			"status":  "success",
 			"message": "Upload file berhasil",
-			"path":    destination,
+			"url":     fmt.Sprintf("http://%s:%s/%s", os.Getenv("HOSTNAME"), os.Getenv("PORT"), destination),
 		})
 	}
 }
