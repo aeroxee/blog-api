@@ -19,6 +19,25 @@ func NewCategoryHandlerV1() CategoryHandlerV1 {
 func (CategoryHandlerV1) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		articleModel := models.NewArticleModel(models.GetDB())
+		id := getQueryInteger(ctx.Request, "id", 0)
+		if id != 0 {
+			category, err := articleModel.GetCategoryByID(id)
+			if err != nil {
+				ctx.JSON(http.StatusNotFound, gin.H{
+					"status":  "error",
+					"message": "Kategori tidak dapat ditemukan.",
+				})
+				return
+			}
+
+			ctx.JSON(http.StatusOK, gin.H{
+				"status":   "success",
+				"message":  "",
+				"category": category,
+			})
+			return
+		}
+
 		categories := articleModel.GetAllCategory()
 
 		ctx.JSON(http.StatusOK, gin.H{
