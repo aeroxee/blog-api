@@ -26,6 +26,7 @@ func userController(group *gin.RouterGroup) {
 	userHandlerV1 := handlers.NewUserHandlerV1()
 
 	group.GET("/auth", userHandlerV1.Auth())
+	group.PUT("/change-info", userHandlerV1.ChangeUserInfo())
 }
 
 func articleControllerNoAuth(group *gin.RouterGroup) {

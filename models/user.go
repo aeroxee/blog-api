@@ -12,6 +12,7 @@ type User struct {
 	LastName   string    `gorm:"size:50" json:"last_name"`
 	Username   string    `gorm:"size:50;unique" json:"username"`
 	Email      string    `gorm:"size:50;unique" json:"email"`
+	Avatar     *string   `gorm:"size:255" json:"avatar"`
 	Password   string    `gorm:"size:128" json:"-"`
 	IsActive   bool      `gorm:"default:false" json:"is_active"`
 	IsAdmin    bool      `gorm:"default:false" json:"is_admin"`

@@ -3,9 +3,11 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/smtp"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +15,7 @@ import (
 	"github.com/Aeroxee/blog-api/auth"
 	"github.com/Aeroxee/blog-api/models"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -391,6 +394,74 @@ func (UserHandlerV1) GetUserFromID() gin.HandlerFunc {
 			"status":  "success",
 			"message": "",
 			"user":    user,
+		})
+	}
+}
+
+func (UserHandlerV1) ChangeUserInfo() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		thisUser, err := getUserContext(ctx.Request)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"status":  "error",
+				"message": "Autentikasi dibutuhkan.",
+			})
+			return
+		}
+
+		payload := struct {
+			FirstName string                `form:"first_name"`
+			LastName  string                `form:"last_name"`
+			Avatar    *multipart.FileHeader `form:"avatar"`
+		}{}
+		err = ctx.ShouldBindWith(&payload, binding.FormMultipart)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"status":  "error",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		if payload.FirstName != "" {
+			thisUser.FirstName = payload.FirstName
+		}
+		if payload.LastName != "" {
+			thisUser.LastName = payload.LastName
+		}
+
+		if payload.Avatar != nil {
+			err = godotenv.Load()
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{
+					"status":  "erorr",
+					"message": err.Error(),
+				})
+				return
+			}
+
+			filename := payload.Avatar.Filename
+			ext := filepath.Ext(filename)
+			filenameUUID := uuid.NewString() + ext
+			destination := fmt.Sprintf("media/profile/%s/%s", thisUser.Username, filenameUUID)
+			err = ctx.SaveUploadedFile(payload.Avatar, destination)
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{
+					"status":  "error",
+					"message": err.Error(),
+				})
+				return
+			}
+
+			thisUser.Avatar = &destination
+		}
+
+		// save
+		models.GetDB().Save(&thisUser)
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  "success",
+			"message": "Berhasil memperbaharui akun dengan nama pengguna: " + thisUser.Username,
+			"user":    thisUser,
 		})
 	}
 }
