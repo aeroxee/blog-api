@@ -10,7 +10,7 @@ Selamat datang di repository Blog API!
 2. Clone repositori ini ke lokal komputer Anda.
 
 ```bash
-git clone https://github.com/nama-akun-anda/blog-client-nextjs.git
+git clone https://github.com/Aeroxee/blog-api.git
 ```
 3. Proyek ini dibuat untuk menjalankan API dari Web Client Blog. Silahkan clone [repo saya berikut ini](https://github.com/Aeroxee/blog-app)
 
